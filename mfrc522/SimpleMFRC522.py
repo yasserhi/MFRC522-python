@@ -2,6 +2,7 @@
 
 from . import MFRC522
 import RPi.GPIO as GPIO
+import time
   
 class SimpleMFRC522:
 
@@ -14,9 +15,16 @@ class SimpleMFRC522:
     self.READER = MFRC522()
   
   def read(self):
+      t1 = time.time()                                                                          #added
       id, text = self.read_no_block()
       while not id:
+          bugtest = 0                                                                           #added
           id, text = self.read_no_block()
+          if (not id) and (time.time()-t1)%1 and self.READER.Read_MFRC522(self.READER.CommIrqReg)==4:     #added
+              bugtest += 1
+              if(bugtest == 3):
+                  self.READER.MFRC522_Reset()
+                  print('reader reset')
       return id, text
 
   def read_id(self):
@@ -32,7 +40,7 @@ class SimpleMFRC522:
       (status, uid) = self.READER.MFRC522_Anticoll()
       if status != self.READER.MI_OK:
           return None
-      return self.uid_to_num(uid)
+      return self.uid_to_hex(uid) #self.uid_to_num(uid)
   
   def read_no_block(self):
     (status, TagType) = self.READER.MFRC522_Request(self.READER.PICC_REQIDL)
@@ -88,3 +96,8 @@ class SimpleMFRC522:
       for i in range(0, 5):
           n = n * 256 + uid[i]
       return n
+  def uid_to_hex(self, uid):
+      id = ''
+      for i in uid:
+          id += format(i,'x')
+      return id

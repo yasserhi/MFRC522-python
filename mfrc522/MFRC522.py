@@ -211,14 +211,18 @@ class MFRC522:
 
         if command == self.PCD_TRANSCEIVE:
             self.SetBitMask(self.BitFramingReg, 0x80)
-
+        
         i = 2000
         while True:
             n = self.Read_MFRC522(self.CommIrqReg)
             i -= 1
             if ~((i != 0) and ~(n & 0x01) and ~(n & waitIRq)):
                 break
-
+            time.sleep(.0001)
+        #print('endloop i = ' + str(i) + ' n = ' + str(n))       #test
+        #if(n==4):
+        #    print('commandreg = '+str(self.Read_MFRC522(self.CommandReg)))
+            
         self.ClearBitMask(self.BitFramingReg, 0x80)
 
         if i != 0:
